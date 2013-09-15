@@ -65,42 +65,4 @@ public class IndexNotificationTask {
 		String subject = MessageFormat.format(emailSubject, indexChangeThreshold, buf.toString());
 		emailService.sendMail(subject.toString(), toEmail, fromEmail, emailTemplate, index);
 	}
-	
-	public void noticeMulti() {
-		log.info("Check if change of index {} is over {}.", indexCode, indexChangeThreshold);
-		String[] indexCodes = indexCode.split(",");
-		List<Index> indexes = stockService.getIndexes(indexCodes);
-		if (indexes == null || indexes.size() < 1) {
-			return;
-		}
-		
-		List<Index> indexesToNotify = new ArrayList<Index>();
-		for (Index index: indexes) {
-			float change = index.getChange();
-			if (change > -indexChangeThreshold && change < indexChangeThreshold) {
-				continue;
-			}
-			indexesToNotify.add(index);
-		}
-		
-		if (indexesToNotify.size() < 1) {
-			return;
-		}
-
-		StringBuilder buf = new StringBuilder();
-		int count = indexesToNotify.size();
-		for (Index index: indexesToNotify) {
-			String name = index.getName();
-			float change = index.getChange();
-			log.info("Change of {} is {} is over {}", name, change, indexChangeThreshold);
-			
-			buf.append(name).append("(").append(change).append(")");
-			if (count-- > 0) {
-				buf.append(", ");
-			}
-		}
-		
-		String subject = MessageFormat.format(emailSubject, indexChangeThreshold, buf.toString());
-		emailService.sendMail(subject, toEmail, fromEmail, emailTemplate, indexesToNotify);
-	}
 }
